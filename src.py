@@ -3,6 +3,7 @@ import threading
 import time
 import os
 import sys
+from datetime import datetime
 
 class Dir_handler(threading.Thread):
 
@@ -11,7 +12,7 @@ class Dir_handler(threading.Thread):
 		super().__init__()
 		self.source_dir = source_dir
 		self.replica_dir = replica_dir
-		self.log_file_dir = log_file_dir
+		self.log_file_dir = os.path.abspath(log_file_dir)
 		self.interval = interval
 		self.thread_event = threading.Event()
 		self.dir_dict = []
@@ -42,13 +43,13 @@ class Dir_handler(threading.Thread):
 	def update_file(self, elem_path_src, elem_path_rep, replica_dirs_list):
 
 		if os.path.basename(elem_path_src) not in replica_dirs_list:
-			self.write_log(f"Copying file: {elem_path_src} to {elem_path_rep}")
+			self.write_log("c", source=elem_path_src, replica=elem_path_rep)
 			shutil.copy(elem_path_src, elem_path_rep)
 
-		elif os.path.getsize(elem_path_src) != os.path.getsize(elem_path_rep) or self.compare_files(elem_path_src, elem_path_rep):
-			self.write_log(f"Updating file: {elem_path_rep}")
+		elif os.path.getsize(elem_path_src) != os.path.getsize(elem_path_rep) or not self.compare_files(elem_path_src, elem_path_rep):
 			os.remove(elem_path_rep)
 			shutil.copy(elem_path_src, elem_path_rep)
+			self.write_log("u", path=elem_path_rep)
 
 	def update_replica(self, source_curr_dir, replica_curr_dir):
 
@@ -64,15 +65,13 @@ class Dir_handler(threading.Thread):
 			
 				if os.path.isdir(os.path.abspath(elem_path_rep)):
 
-					self.write_log(f"Directory not in {elem_path_src}. Deleting {elem_path_rep} from replica")
 					shutil.rmtree(os.path.abspath(elem_path_rep))
-					self.write_log(f"Deleted {elem_path_rep} from replica")
+					self.write_log("d", path=elem_path_rep)
 
 				elif os.path.isfile(os.path.abspath(elem_path_rep)):
 
-					self.write_log(f"File not in {elem_path_src}. Deleting {elem_path_rep} from replica")
 					os.remove(elem_path_rep)
-					self.write_log(f"Deleted {elem_path_rep} from replica")
+					self.write_log("d", path=elem_path_rep)
 
 		for elem in source_dirs_list:
 
@@ -83,13 +82,53 @@ class Dir_handler(threading.Thread):
 				self.update_file(os.path.abspath(elem_path_src), os.path.abspath(elem_path_rep), replica_dirs_list)
 
 			elif os.path.isdir(os.path.abspath(elem_path_src)):
-				os.makedirs(os.path.abspath(elem_path_rep), exist_ok=True)
-				self.update_replica(os.path.join(source_curr_dir, elem), os.path.join(replica_curr_dir, elem))
-		return
 
-	def write_log(self, log_data):
-		print(log_data)
-		pass
+				if not os.path.isdir(os.path.abspath(elem_path_rep)):
+					os.makedirs(os.path.abspath(elem_path_rep))
+					self.write_log("u", path=os.path.abspath(elem_path_rep))
+
+				self.update_replica(os.path.join(source_curr_dir, elem), os.path.join(replica_curr_dir, elem))
+
+
+	def write_log(self, flag, **kwargs):
+		
+		log_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+		if flag == "u":
+			if 'path' not in kwargs:
+				raise ValueError("For 'u' flag, 'path' argument is required.")
+			log_data = kwargs['path']
+			message = f"[{log_time}] Updated: {log_data}"
+
+		elif flag == "c":
+			if 'source' not in kwargs or 'replica' not in kwargs:
+				raise ValueError("For 'c' flag, 'source' and 'replica' arguments are required.")
+			source_dir = kwargs['source']
+			replica_dir = kwargs['replica']
+			log_data = f"Source: {source_dir}, Replica: {replica_dir}"
+			message = f"[{log_time}] Copied: {log_data}"
+
+		elif flag == "d":
+			if 'path' not in kwargs:
+				raise ValueError("For 'd' flag, 'path' argument is required.")
+			log_data = kwargs['path']
+			message = f"[{log_time}] Deleted: {log_data}"
+
+		elif flag == "e":
+			if 'error' not in kwargs:
+				raise ValueError("For 'e' flag, 'error' argument is required.")
+			log_data = kwargs['error']
+			message = f"[{log_time}] Error: {log_data}"
+		
+		else:
+			if 'info' not in kwargs:
+				raise ValueError("For default flag, 'info' argument is required.")
+			log_data = kwargs['info']
+			message = f"[{log_time}] Info: {log_data}"
+
+		print(message)
+		with open(self.log_file_dir, 'a') as log_file:
+			log_file.write(f"{message}\n")
 
 if __name__ == "__main__":
 
