@@ -24,7 +24,7 @@ class Dir_handler(threading.Thread):
 			self.update_replica(self.source_dir, self.replica_dir)
 			time.sleep(self.interval)
 
-	def compare_files(self, elem_path_src, elem_path_rep, chunk_size=1024):
+	def compare_files(self, elem_path_src, elem_path_rep, chunk_size=1024): # Compares files byte by byte (XOR)
 
 		with open(elem_path_src, 'rb') as elem_path_src, open(elem_path_rep, 'rb') as elem_path_rep:
 
@@ -56,7 +56,7 @@ class Dir_handler(threading.Thread):
 		source_dirs_list = os.listdir(os.path.abspath(source_curr_dir))
 		replica_dirs_list = os.listdir(os.path.abspath(replica_curr_dir))
 
-		for elem in replica_dirs_list:
+		for elem in replica_dirs_list: # Deletes files and directories that are not in the source directory
 
 			elem_path_src = os.path.join(source_curr_dir, elem)
 			elem_path_rep = os.path.join(replica_curr_dir, elem)
@@ -73,7 +73,7 @@ class Dir_handler(threading.Thread):
 					os.remove(elem_path_rep)
 					self.write_log("d", path=elem_path_rep)
 
-		for elem in source_dirs_list:
+		for elem in source_dirs_list: # Updates files and directories that are in the source directory
 
 			elem_path_src = os.path.join(source_curr_dir, elem)
 			elem_path_rep = os.path.join(replica_curr_dir, elem)
@@ -88,7 +88,6 @@ class Dir_handler(threading.Thread):
 					self.write_log("u", path=os.path.abspath(elem_path_rep))
 
 				self.update_replica(os.path.join(source_curr_dir, elem), os.path.join(replica_curr_dir, elem))
-
 
 	def write_log(self, flag, **kwargs):
 		

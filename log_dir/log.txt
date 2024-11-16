@@ -26,3 +26,7 @@
 [2024-11-16 18:51:52] Updated: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New folder\New folder
 [2024-11-16 18:51:58] Copied: Source: C:\Users\ferna\Desktop\venv\python_prog\original_dir\New folder\New folder\New Text Document.txt, Replica: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New folder\New folder\New Text Document.txt
 [2024-11-16 18:52:04] Updated: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New folder\New folder\New Text Document.txt
+[2024-11-16 18:59:00] Copied: Source: C:\Users\ferna\Desktop\venv\python_prog\original_dir\New Text Document (2).txt, Replica: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New Text Document (2).txt
+[2024-11-16 18:59:13] Deleted: .\replica_dir\New Text Document (2).txt
+[2024-11-16 18:59:21] Updated: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New Text Document.txt
+[2024-11-16 18:59:37] Copied: Source: C:\Users\ferna\Desktop\venv\python_prog\original_dir\New Text Document.txt, Replica: C:\Users\ferna\Desktop\venv\python_prog\replica_dir\New Text Document.txt
